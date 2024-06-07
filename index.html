@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .todo-item {
+            margin-bottom: 10px;
+        }
+        .badge {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Todo List</h1>
+        <form method="POST" action="{{ url_for('add') }}" class="form-inline mb-4">
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="title" class="sr-only">Todo</label>
+                <input type="text" class="form-control" id="title" name="title" placeholder="Add new todo" required>
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">Add</button>
+        </form>
+        <ul class="list-group">
+            {% for todo in todos %}
+                <li class="list-group-item d-flex justify-content-between align-items-center todo-item" data-id="{{ todo.id }}">
+                    <span>{{ todo.title }}</span>
+                    <div>
+                        <span class="badge badge-{{ 'success' if todo.complete else 'secondary' }} toggle-complete mr-2" data-id="{{ todo.id }}">{{ 'Completed' if todo.complete else 'Incomplete' }}</span>
+                        <button class="btn btn-danger btn-sm delete-btn" data-id="{{ todo.id }}">Delete</button>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.toggle-complete').click(function() {
+                var todoId = $(this).data('id');
+                $.post('/toggle_complete', { id: todoId }, function(data) {
+                    var badge = $('.toggle-complete[data-id="' + todoId + '"]');
+                    if (data.complete) {
+                        badge.removeClass('badge-secondary').addClass('badge-success').text('Completed');
+                    } else {
+                        badge.removeClass('badge-success').addClass('badge-secondary').text('Incomplete');
+                    }
+                });
+            });
+
+            $('.delete-btn').click(function() {
+                var todoId = $(this).data('id');
+                $.post('/delete_task', { id: todoId }, function(data) {
+                    if (data.success) {
+                        $('.todo-item[data-id="' + todoId + '"]').remove();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
